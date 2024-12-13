@@ -25,4 +25,3 @@ if __name__ == "__main__":
     connect_to_database()
     eval_user_input()
     print("Addition result:", add_numbers(2, 3))
-
