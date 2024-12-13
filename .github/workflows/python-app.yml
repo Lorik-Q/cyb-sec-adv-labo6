@@ -5,7 +5,7 @@ on:
     branches:
       - main
   schedule:
-    - cron: '0 0 * * 0'
+    - cron: '0 0 * * 0' # Wekelijkse scan
 
 jobs:
   build-and-test:
@@ -37,9 +37,7 @@ jobs:
       uses: github/codeql-action/analyze@v2
 
     - name: Check for vulnerable dependencies
-      uses: advanced-security/dependency-review-action@v1
+      uses: github/dependency-review-action@v3
 
     - name: Scan for secrets
-      uses: yoboo/secret-scanner-action@v1
-      with:
-        fail_on_secrets: true
+      uses: zricethezav/gitleaks-action@v1.2.0
