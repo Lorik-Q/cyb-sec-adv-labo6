@@ -37,7 +37,7 @@ jobs:
       uses: github/codeql-action/analyze@v2
 
     - name: Check for vulnerable dependencies
-      uses: github/dependency-review-action@v3
+      uses: actions/dependency-review-action@v3
 
     - name: Scan for secrets
       uses: zricethezav/gitleaks-action@v1.2.0
