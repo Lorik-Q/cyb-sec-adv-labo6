@@ -1,0 +1,2 @@
+flask==0.12  # Kwetsbaar voor denial-of-service en XSS-aanvallen
+requests==2.19.0  # Kwetsbaar voor redirect-manipulatie
