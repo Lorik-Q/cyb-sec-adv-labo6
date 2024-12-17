@@ -1,29 +1,21 @@
-name: Static Application Security Testing (SAST)
+name: Weekly Code Scan
 
 on:
-  pull_request:
-    branches:
-      - main
   schedule:
-    - cron: '0 0 * * 0' # Wekelijkse scan
+    - cron: '0 0 * * 0'  # Elke zondag om middernacht
 
 jobs:
-  sast:
-    name: Run SAST with Semgrep
+  sast-scan:
+    name: Weekly SAST Scan
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    # Checkout de code
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.x'
-
-      - name: Install Semgrep
-        run: pip install semgrep
-
-      - name: Run Semgrep scan
-        run: |
-          semgrep --config p/ci # Using Semgrep's pre-built ruleset for CI/CD
+    # Voer een SAST-scan uit met CodeQL
+    - name: Run CodeQL analysis
+      uses: github/codeql-action/analyze@v2
+      with:
+        languages: python
