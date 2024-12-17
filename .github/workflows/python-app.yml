@@ -16,11 +16,15 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    # SAST (Static Application Security Testing) met CodeQL
-    - name: Run CodeQL analysis
-      uses: github/codeql-action/analyze@v2
+      # 2. CodeQL Initialiseren
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
       with:
         languages: python
+
+      # 3. CodeQL Analyse
+    - name: Run CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
 
     # Controleer dependencies op kwetsbaarheden
     - name: Dependency Check
