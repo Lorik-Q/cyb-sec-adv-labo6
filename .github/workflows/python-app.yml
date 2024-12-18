@@ -1,46 +1,58 @@
-name: Secure Pipeline
+name: Secure Pipeline Checks
 
 on:
+  push:
+    branches:
+      - main
+      - dev
   pull_request:
     branches:
       - main
       - dev
+  schedule:
+    - cron: '0 14 * * 6'  # Elke zaterdag om 14:00 UTC
 
 jobs:
-  secure-pipeline:
-    name: Secure Pipeline Checks
+  analyze:
+    name: CodeQL Analysis
     runs-on: ubuntu-latest
+    permissions:
+      security-events: write
 
     steps:
-    # Checkout de code
-    - name: Checkout code
-      uses: actions/checkout@v3
+      # Beveilig de runner
+      - name: Harden the runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
 
-      # 2. CodeQL Initialiseren
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
-      with:
-        languages: python
+      # Haal de repository op
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      # 3. CodeQL Analyse
-    - name: Run CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
+      # Initialiseer CodeQL
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: python
 
-    # Controleer dependencies op kwetsbaarheden
-    - name: Dependency Check
-      uses: aquasecurity/trivy-action@master
-      with:
-        scan-type: fs
-        vulnerability-type: library
-        exit-code: "1"
+      # Autobuild voor compatibiliteit
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
 
-    # Zoek naar geheimen in de code
-    - name: Secret Scanning
-      uses: actions/checkout@v3
+      # Voer CodeQL analyse uit
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
 
-    - name: Secret Scanning
-      uses: trufflesecurity/trufflehog@v3.67.1
-      with:
-        path: .  # Scant de volledige repository
-        base: HEAD~1
-        head: HEAD
+      # Controleer dependencies op kwetsbaarheden met Trivy
+      - name: Dependency Check
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          exit-code: "1"
+
+      # Zoek naar geheimen in de code met TruffleHog
+      - name: Secret Scanning
+        uses: trufflesecurity/trufflehog@v3.67.1
+        with:
+          path: .  # Scant de volledige repository
