@@ -1,43 +1,58 @@
-name: Python Application Workflow
+name: Secure Pipeline Checks
 
 on:
+  push:
+    branches:
+      - main
+      - dev
   pull_request:
     branches:
       - main
+      - dev
   schedule:
-    - cron: '0 0 * * 0' # Wekelijkse scan
+    - cron: '0 14 * * 6'  # Elke zaterdag om 14:00 UTC
 
 jobs:
-  build-and-test:
-    name: Build, Test, and Security Checks
+  analyze:
+    name: CodeQL Analysis
     runs-on: ubuntu-latest
+    permissions:
+      security-events: write
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      # Beveilig de runner
+      - name: Harden the runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
+      # Haal de repository op
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Install dependencies
-      run: |
-        pip install -r requirements.txt || echo "No dependencies to install"
+      # Initialiseer CodeQL
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: python
 
-    - name: Run tests
-      run: |
-        pytest || echo "No tests found"
+      # Autobuild voor compatibiliteit
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
 
-    - name: Run SAST (Static Application Security Testing)
-      uses: github/codeql-action/init@v2
-      with:
-        languages: python
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
+      # Voer CodeQL analyse uit
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
 
-    - name: Check for vulnerable dependencies
-      uses: actions/dependency-review-action@v3
+      # Controleer dependencies op kwetsbaarheden met Trivy
+      - name: Dependency Check
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          exit-code: "1"
 
-    - name: Scan for secrets
-      uses: zricethezav/gitleaks-action@v1.2.0
+      # Zoek naar geheimen in de code met TruffleHog
+      - name: Secret Scanning
+        uses: trufflesecurity/trufflehog@v3.67.1
+        with:
+          path: .  # Scant de volledige repository

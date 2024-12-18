@@ -1,28 +1,19 @@
-# Onveilig gebruik van een hard-coded wachtwoord
-def connect_to_database():
-    password = "P@ssw0rd123"  # Dit zal een secret-scanning tool triggeren
-    print("Connecting to database with password:", password)
+import sqlite3
 
-# Gebruik van een kwetsbare versie van een dependency
-try:
-    import requests  # Zorg ervoor dat je een kwetsbare versie gebruikt in requirements.txt
-    response = requests.get("https://example.com")
-    print("Response status code:", response.status_code)
-except ImportError:
-    print("The requests library is not installed!")
+# Kwetsbare SQL-query
+def login(username, password):
+    conn = sqlite3.connect("users.db")
+    query = f"SELECT * FROM users WHERE username = '{username}' AND password = '{password}'"
+    conn.execute(query)
+    conn.close()
 
-# Onveilige code die een SAST-check kan triggeren
-def eval_user_input():
-    user_input = input("Enter something to evaluate: ")
-    result = eval(user_input)  # Gebruik van eval() is een bekende kwetsbaarheid
-    print("Result of evaluation:", result)
+# Hardcoded geheim
+API_KEY = "sk_test_4eC39HqLyjWDarjtT1zdp7dc"
 
-# Veilige code voor vergelijking
-def add_numbers(a, b):
-    return a + b
+# Onveilige eval
+def unsafe_eval():
+    user_input = "print('Hacked!')"
+    eval(user_input)
 
-if __name__ == "__main__":
-    connect_to_database()
-    eval_user_input()
-    print("Addition result:", add_numbers(2, 3))
-
+# Verouderde dependency in requirements.txt:
+# flask==0.12
